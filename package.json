@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon app.js",
     "integtest": "mocha __tests__/integration/apiTest.js",
-    "apitest": "mocha __tests__/unit/bookTest.js"
+    "unittest": "mocha __tests__/unit/bookTest.js"
   },
   "keywords": [],
   "author": "",

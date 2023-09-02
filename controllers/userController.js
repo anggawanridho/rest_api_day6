@@ -39,7 +39,7 @@ exports.auth = async (req, res) => {
             token
         })
     } else {
-        return res.status(400).json({
+        return res.status(401).json({
             message: 'Authentication Failed, wrong password'
         });
     }

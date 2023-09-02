@@ -9,20 +9,7 @@ chai.use(chaiHttp);
 let authToken;
 describe('User Authentication API Tests', () => {
     before(async () => {
-        // const userData = {
-        //     username: 'existinguser',
-        //     password: 'existingpassword',
-        //     role: 'admin'
-        // };
-
-        // await db.user.create(userData);
-
-        // const response = await chai
-        //     .request(app)
-        //     .post('/user/login')
-        //     .send(userData);
-
-        // authToken = response.body.token;
+        
     });
 
     after(async () => {
@@ -90,13 +77,13 @@ describe('User Authentication API Tests', () => {
             .post('/user/login')
             .send(incorrectLoginData);
     
-        expect(response).to.have.status(400);
+        expect(response).to.have.status(401);
         expect(response.body).to.have.property('message', 'Authentication Failed, wrong password');
     });
 
 });
 
-describe('Book test', () => {
+describe('Book API test', () => {
     before(async () => {
         const userData = {
             username: 'bookadmin',
@@ -120,12 +107,6 @@ describe('Book test', () => {
                 username: 'bookadmin'
             }
         });
-
-        await db.book.destroy({
-            where: {
-                bookId: 'erika'
-            }
-        });
     });
 
     it('should create a book', async () => {
@@ -146,21 +127,54 @@ describe('Book test', () => {
         expect(response.body).to.have.property('idBuku');
     });
 
+    it('should list all books', async() => {
+        const response = await chai
+            .request(app)
+            .get('/api/book');
+        
+        expect(response).to.have.status(200);
+    })
+
+    it('should show book by id', async() => {
+        const bookData = {
+            idBuku: 'erika'
+        }
+        const response = await chai
+            .request(app)
+            .get(`/api/book/${bookData.idBuku}`);
+        
+        expect(response).to.have.status(200);
+        expect(response.body).to.have.property('namaBuku');
+    })
+
+    it('should edit book by id', async() => {
+        let idBuku = 'erika';
+        const bookData = {
+            namaBuku: 'Wir lieben die Demokratie',
+            kategoriBuku: 'Anthem',
+            deskripsiBuku: 'Auf der Heide blüht ein kleines Blümelein und das heißt, Erika.'
+        }
+        const response = await chai
+            .request(app)
+            .put(`/api/book/${idBuku}`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send(bookData);
+        
+        expect(response).to.have.status(200);
+        expect(response.body.message).to.equal('Book updated successfully');
+    })
+
     it('should delete a book', async () => {
-        // const bookData = {
-        //     idBuku: 'erika',
-        //     namaBuku: 'Wir lieben die Demokratie',
-        //     kategoriBuku: 'Party Anthem',
-        //     deskripsiBuku: 'Auf der Heide blüht ein kleines Blümelein und das heißt, Erika.'
-        // };
+        const bookData = {
+            idBuku: 'erika'
+        };
 
-        // const response = await chai
-        //     .request(app)
-        //     .post('/api/book')
-        //     .set('Authorization', `Bearer ${authToken}`)
-        //     .send(bookData);
+        const response = await chai
+            .request(app)
+            .delete(`/api/book/${bookData.idBuku}`)
+            .set('Authorization', `Bearer ${authToken}`);
 
-        // expect(response).to.have.status(200);
-        // expect(response.body).to.have.property('idBuku');
+        expect(response).to.have.status(200);
+        expect(response.body.message).to.equal('Book deleted successfully');
     });
 });
