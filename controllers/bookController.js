@@ -7,7 +7,7 @@ exports.create = async (req, res) => {
         } catch (error) {
             console.log(error);
         }
-    }
+}
 
 exports.showAll = async (req, res) => { // Add 'res' parameter here
     try {

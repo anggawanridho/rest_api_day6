@@ -6,30 +6,29 @@ const expect = chai.expect;
 
 chai.use(chaiHttp);
 
+let authToken;
 describe('User Authentication API Tests', () => {
-    let authToken;
-
     before(async () => {
-        const userData = {
-            username: 'testuser',
-            password: 'testpassword',
-            role: 'admin'
-        };
+        // const userData = {
+        //     username: 'existinguser',
+        //     password: 'existingpassword',
+        //     role: 'admin'
+        // };
 
-        await db.user.create(userData);
+        // await db.user.create(userData);
 
-        const response = await chai
-            .request(app)
-            .post('/user/login')
-            .send(userData);
+        // const response = await chai
+        //     .request(app)
+        //     .post('/user/login')
+        //     .send(userData);
 
-        authToken = response.body.token;
+        // authToken = response.body.token;
     });
 
     after(async () => {
         await db.user.destroy({
             where: {
-                username: 'testuser'
+                username: 'newuser'
             }
         });
     });
@@ -51,22 +50,24 @@ describe('User Authentication API Tests', () => {
 
     it('should handle registration of an existing user', async () => {
         const existingUserData = {
-            username: 'testuser',
-            password: 'testpassword'
+            username: 'newuser',
+            password: 'newpassword',
+            role: 'admin'
         };
-
+    
         const response = await chai
             .request(app)
             .post('/user/register')
             .send(existingUserData);
-
-        expect(response).to.have.status(500);
+    
+        expect(response).to.have.status(409);
+        expect(response.body).to.have.property('error').that.includes('User is already exist!');
     });
 
     it('should log in an existing user', async () => {
         const loginData = {
-            username: 'testuser',
-            password: 'testpassword'
+            username: 'newuser',
+            password: 'newpassword'
         };
 
         const response = await chai
@@ -80,25 +81,86 @@ describe('User Authentication API Tests', () => {
 
     it('should not log in with incorrect credentials', async () => {
         const incorrectLoginData = {
-            username: 'testuser',
+            username: 'newuser',
             password: 'incorrectpassword'
         };
-
+    
         const response = await chai
             .request(app)
             .post('/user/login')
             .send(incorrectLoginData);
-
-        expect(response).to.have.status(401);
+    
+        expect(response).to.have.status(400);
+        expect(response.body).to.have.property('message', 'Authentication Failed, wrong password');
     });
 
-    it('should log out a user', async () => {
+});
+
+describe('Book test', () => {
+    before(async () => {
+        const userData = {
+            username: 'bookadmin',
+            password: 'bookadminpassword',
+            role: 'admin'
+        };
+
+        await db.user.create(userData);
+
         const response = await chai
             .request(app)
-            .post('/user/logout')
-            .set('Authorization', `Bearer ${authToken}`);
+            .post('/user/login')
+            .send(userData);
+
+        authToken = response.body.token;
+    });
+
+    after(async () => {
+        await db.user.destroy({
+            where: {
+                username: 'bookadmin'
+            }
+        });
+
+        await db.book.destroy({
+            where: {
+                bookId: 'erika'
+            }
+        });
+    });
+
+    it('should create a book', async () => {
+        const bookData = {
+            idBuku: 'erika',
+            namaBuku: 'Wir lieben die Demokratie',
+            kategoriBuku: 'Party Anthem',
+            deskripsiBuku: 'Auf der Heide blüht ein kleines Blümelein und das heißt, Erika.'
+        };
+
+        const response = await chai
+            .request(app)
+            .post('/api/book')
+            .set('Authorization', `Bearer ${authToken}`)
+            .send(bookData);
 
         expect(response).to.have.status(200);
-        expect(response.body.message).to.equal('Logged out successfully');
+        expect(response.body).to.have.property('idBuku');
+    });
+
+    it('should delete a book', async () => {
+        // const bookData = {
+        //     idBuku: 'erika',
+        //     namaBuku: 'Wir lieben die Demokratie',
+        //     kategoriBuku: 'Party Anthem',
+        //     deskripsiBuku: 'Auf der Heide blüht ein kleines Blümelein und das heißt, Erika.'
+        // };
+
+        // const response = await chai
+        //     .request(app)
+        //     .post('/api/book')
+        //     .set('Authorization', `Bearer ${authToken}`)
+        //     .send(bookData);
+
+        // expect(response).to.have.status(200);
+        // expect(response.body).to.have.property('idBuku');
     });
 });

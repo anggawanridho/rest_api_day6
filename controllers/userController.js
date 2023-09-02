@@ -5,11 +5,13 @@ const secretKey = `mySecretKeyIsMyDogsName`;
 
 exports.create = async (req, res) => {
     try {
-        const book = await db.user.create(req.body);
-        res.status(201).json(book);
+        const user = await db.user.create(req.body);
+        res.status(201).json(user);
     } catch (error) {
-        if (error.errors && error.errors[0].message === `PRIMARY must be unique`) {
-            res.status(500).json({ error: 'User is already exist!' });
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            res.status(409).json({ error: 'User is already exist!' });
+        } else {
+            res.status(500).json({ error: 'An error occurred while registering the user.' });
         }
     }
 }
