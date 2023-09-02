@@ -12,7 +12,7 @@ const sequelize = new Sequelize(dbConfig.DB , dbConfig.USER , dbConfig.PASSWORD,
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 db.user = require('./userModel')(sequelize, Sequelize);
-db.barang = require('./bookModel')(sequelize, Sequelize);
+db.buku = require('./bookModel')(sequelize, Sequelize);
 
 
 module.exports = db;

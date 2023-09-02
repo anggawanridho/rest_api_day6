@@ -7,15 +7,15 @@ const router = express.Router();
 
 router.use(loggingMiddleware);
 
-router.post('/', roleMiddleware('admin'), bookController.create);
-
 router.get('/', bookController.showAll);
 
-// router.get('/book', bookController.);
+router.post('/', roleMiddleware('admin'), bookController.create);
 
-router.put('/books', roleMiddleware('admin'), bookController.update);
+router.get('/:idBuku', bookController.showById);
 
-router.delete('/books', roleMiddleware('admin'), bookController.delete);
+router.put('/:idBuku', roleMiddleware('admin'), bookController.update);
+
+router.delete('/:idBuku', roleMiddleware('admin'), bookController.delete);
 
 
 module.exports = router;
