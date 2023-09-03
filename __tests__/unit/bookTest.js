@@ -16,6 +16,9 @@ describe('Book API testing', () => {
         const res = {
             status: (statusCode) => {
                 assert.equal(statusCode, 200);
+            },
+            json: (data) => {
+                assert.deepStrictEqual(data.message, 'Book added!');
             }
         }
 
@@ -24,109 +27,126 @@ describe('Book API testing', () => {
     
     after(async () => {
         // runs once after the last test in this block
-        // await bookController.deleteAll();
+        await bookController.deleteAll();
     });
     
-    describe('List of Books', () => {
+    it('should return a response with list of books', async () => {
+        let result;
+        const req = { 
+            query: {}
+        };
+        const res = {
+            status: (statusCode) => {
+                assert.strictEqual(statusCode, 200);
+                return {
+                    json: (data) => {
+                        result = data;
+                        assert.deepStrictEqual(data.message, 'Books retrieved!');
+                    },
+                };
+            }
+        };
 
-        it('should return a response with list of books', async () => {
-            const req = { 
-                query: {}
+        await bookController.showAll(req, res);
+    });
+
+    
+    it('should remove a book', async () => {
+        const req = { params: { idBuku: 'erika' } };
+        
+        const res = {
+            status: (statusCode) => {
+                assert.strictEqual(statusCode, 200);
+                return {
+                    json: (data) => {
+                        result = data;
+                        assert.deepStrictEqual(data.message, 'Book deleted successfully');
+                    },
+                };
+            }
+        };
+        await bookController.delete(req, res);
+    });
+    
+    it('should return a response with empty list of books', async () => {
+        const req = { 
+            query: {}
+        };
+
+        const res = {
+            status: (status) => {
+                assert.equal(status, 404)
+                return {
+                    json: (data) => {
+                        assert.deepStrictEqual(data.message, 'No Book in database');
+                    },
+                };
+            }
+        };
+
+        await bookController.showAll(req, res);
+    });
+    
+    // describe('List of Books', () => {
+
+
+        
+    // });
+
+    describe('Adding a book', () => {
+        it('should add a book', async () => {
+            const req = {
+                body: {
+                    idBuku: 'führer',
+                    namaBuku: 'Mein Kampf',
+                    kategoriBuku: 'Auto Biography',
+                    deskripsiBuku: 'Das Buch Mein Kampf von Adolf Hitler beschreibt seinen Werdegang sowie die Ziele der nationalsozialistischen Bewegung.'
+                }
             };
-
             const res = {
-                status: (status) => {
-                    return {
-                        json: (data) => {
-                            assert.deepStrictEqual(data.message, 'Books retrieved!');
-                        }
-                    };
+                status: (statusCode) => {
+                    assert.equal(statusCode, 200);
+                },
+                json: (data) => {
+                    assert.deepStrictEqual(data.message, 'Book added!');
+                    assert.deepStrictEqual(data.book.idBuku, 'führer');
+                    assert.deepStrictEqual(data.book.namaBuku, 'Mein Kampf');
+                    assert.deepStrictEqual(data.book.kategoriBuku, 'Auto Biography');
+                    assert.deepStrictEqual(data.book.deskripsiBuku, 'Das Buch Mein Kampf von Adolf Hitler beschreibt seinen Werdegang sowie die Ziele der nationalsozialistischen Bewegung.');
                 }
             };
 
-            await bookController.showAll(req, res);
-        });
-
-        it('shouldnt return a response with list of books', async () => {
-            const req = { query: { status: 'error' } };
-
-            const res = {
-                status: (status) => {
-                    return {
-                        json: (data) => {
-                            assert.deepStrictEqual(data.message, 'Error occurred!');
-                        }
-                    };
-                }
-            };
-
-            await bookController.showAll(req, res);
+            await bookController.create(req, res);
         });
     });
 
-    // describe('Adding a book', () => {
-    //     it('should add a book', async () => {
-    //         const req = {
-    //             body: {
-    //                 // Provide the necessary book data here
-    //                 idBuku: 'führer',
-    //                 namaBuku: 'Mein Kampf',
-    //                 kategoriBuku: 'Auto Biography',
-    //                 deskripsiBuku: 'Das Buch Mein Kampf von Adolf Hitler beschreibt seinen Werdegang sowie die Ziele der nationalsozialistischen Bewegung.'
-    //             }
-    //         };
-    //         const res = {
-    //             status: (statusCode) => {
-    //                 assert.equal(statusCode, 200); // Check if status is 200
-    //                 return res;
-    //             },
-    //             json: (data) => {
-    //                 // Check if the response contains the book data
-    //                 assert.isObject(data);
-    //                 assert.equal(data.idBuku, 'führer');
-    //                 assert.equal(data.namaBuku, 'Mein Kampf');
-    //                 assert.equal(data.kategoriBuku, 'Auto Biography');
-    //                 assert.equal(data.deskripsiBuku, 'Das Buch Mein Kampf von Adolf Hitler beschreibt seinen Werdegang sowie die Ziele der nationalsozialistischen Bewegung.');
-    //             }
-    //         };
+    describe('Updating a book', () => {
+        it('should update a book', async () => {
+        const req = { 
+            params: {
+                idBuku: 'führer'
+            },
+            body: {
+                namaBuku: 'Wir lieben die Demokratie',
+                kategoriBuku: 'Party Anthem',
+                deskripsiBuku: 'Auf der Heide blüht ein kleines Blümelein und das heißt, Erika.'
+            }
+        };
 
-    //         await bookController.create(req, res);
-    //     });
-    // });
+        const res = {
+            status: (statusCode) => {
+                assert.equal(statusCode, 200);
+            },
+            json: (data) => {
+                assert.deepStrictEqual(data.message, 'Book updated successfully');
+                assert.deepStrictEqual(data.existingBook.idBuku, 'führer');
+                assert.deepStrictEqual(data.existingBook.namaBuku, 'Wir lieben die Demokratie');
+                assert.deepStrictEqual(data.existingBook.kategoriBuku, 'Party Anthem');
+                assert.deepStrictEqual(data.existingBook.deskripsiBuku, 'Auf der Heide blüht ein kleines Blümelein und das heißt, Erika.');
+            }
+        };
 
-    // describe('Updating a book', () => {
-    //     it('should update a book', async () => {
-    //     const req = { params: { id: 1 }, body: { title: 'The Lord of the Rings', author: 'J. R. R. Tolkien' } };
-
-    //     const res = {
-    //         status: (status) => {
-    //         return {
-    //             json: (data) => {
-    //             assert.deepStrictEqual(data.message, 'Book updated!');
-    //             }
-    //         };
-    //         }
-    //     };
-
-    //     await bookController.update(req, res);
-    //     });
-    // });
-
-    // describe('Removing a book', () => {
-    //     it('should remove a book', async () => {
-    //     const req = { params: { id: 1 } };
-
-    //     const res = {
-    //         status: (status) => {
-    //         return {
-    //             json: (data) => {
-    //             assert.deepStrictEqual(data.message, 'Book deleted!');
-    //             }
-    //         };
-    //         }
-    //     };
-
-    //     await bookController.delete(req, res);
-    //     });
-    // });
+        await bookController.update(req, res);
+        });
+    });
 });

@@ -8,8 +8,12 @@ exports.create = async (req, res) => {
                 book
             });
         } catch (error) {
-            console.log(error);
-            res.status(500).json({ message: 'Error occurred!' });
+            if (error.name === 'SequelizeUniqueConstraintError') {
+                res.status(409).json({ error: 'Book is already exist!' });
+            } else {
+                res.status(500).json({ error: 'An error occurred while adding the book.' });
+                console.log(error);
+            }
         }
 }
 
@@ -32,7 +36,6 @@ exports.showAll = async (req, res) => { // Add 'res' parameter here
             });
         }
     } catch (error) {
-        console.log(error);
         res.status(500).json({ error: 'An error occurred while fetching books.' });
     }
 }
@@ -65,12 +68,11 @@ exports.update = async (req, res) => {
         // Update only the fields provided in the request body
         await existingBook.update(updateFields);
 
-        res.status(200).json({ 
+        res.json({ 
             message: 'Book updated successfully',
             existingBook
         });
     } catch (error) {
-        console.log(error);
         res.status(500).json({ error: 'An error occurred while updating the book.' });
     }
 }
